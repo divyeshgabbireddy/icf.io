@@ -1,0 +1,328 @@
+/* icf.io/frontend/src/ProblemView.css */
+
+/* Base reset for cleaner styling */
+* {
+    box-sizing: border-box;
+  }
+  
+  html, body, #root, .App {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* Prevent body scrollbars */
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  }
+  
+  /* Theme Variables - Dark Theme Only */
+  :root {
+    --app-bg: #1a202c;
+    --panel-bg: #2d3748;
+    --left-panel-bg: #2d3748;
+    --console-bg: #1a202c;
+    --console-pre-bg: #171923;
+    --console-pre-text: #e2e8f0;
+    --console-border: #2d3748;
+    --text-color-primary: #e2e8f0;
+    --text-color-secondary: #a0aec0;
+    --text-color-tertiary: #718096;
+    --text-color-headings: #f7fafc;
+    --border-color: #4a5568;
+    --border-color-subtle: #2d3748;
+    --resize-handle-bg: #2d3748;
+    --resize-handle-bg-hover: #4a5568;
+    --resize-handle-bg-active: #718096;
+    --code-bg-color: #1a202c;
+    --code-text-color: #cbd5e0;
+    --code-border-color: #4a5568;
+    --bg-color-subtle: #2d3748;
+    --button-bg-secondary: #4a5568;
+    --button-bg-secondary-hover: #718096;
+    --button-text: #e2e8f0;
+    --accent-color: #63b3ed;
+    --button-run-bg: #2f855a;
+    --button-run-text: #c6f6d5;
+    --button-run-bg-hover: #38a169;
+    --button-submit-bg: #3182ce;
+    --button-submit-text: #ffffff;
+    --button-submit-bg-hover: #2b6cb0;
+    --button-exit-bg: #c53030;
+    --button-exit-text: #fed7d7;
+    --button-exit-bg-hover: #e53e3e;
+    --error-color: #fc8181;
+    --error-bg: rgba(252, 129, 129, 0.1);
+  }
+  
+  .problem-view-container {
+    display: flex; /* Use flex for the main container */
+    height: 100vh; /* Full viewport height */
+    width: 100vw; /* Full viewport width */
+    overflow: hidden; /* Prevent container scroll */
+    /* Apply theme variables */
+    background-color: var(--app-bg);
+    color: var(--text-color-primary);
+  }
+  
+  .panel-group {
+    flex-grow: 1;
+    height: 100%; /* Ensure group takes full height */
+    width: 100%; /* Ensure group takes full width */
+    display: flex; /* Needed for horizontal PanelGroup */
+  }
+  
+  /* General Panel Styling */
+  .panel {
+    display: flex; /* Use flex for panel content arrangement */
+    flex-direction: column; /* Stack content vertically */
+    overflow: hidden; /* Prevent panel's own scrollbars unless intended */
+    background-color: var(--panel-bg);
+  }
+  
+  .panel-left {
+    border-right: 1px solid var(--border-color); /* Separator */
+  }
+  
+  .panel-right {
+    /* Background set by nested panels or theme */
+  }
+  
+  /* Scrolling content area within panels */
+  .panel-content {
+    padding: 1.5rem;
+    flex-grow: 1; /* Allow content area to fill panel */
+    overflow-y: auto; /* Enable vertical scrolling ONLY here */
+    overflow-x: hidden; /* Prevent horizontal scroll in content */
+  }
+  
+  /* Left Panel Specifics */
+  .problem-description {
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+  
+  .problem-section {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+  }
+  .problem-section:not(:last-child) { /* Add border between sections */
+      border-bottom: 1px solid var(--border-color-subtle);
+  }
+  .problem-title-section {
+      padding-bottom: 15px; /* Less padding after title */
+  }
+  
+  .problem-section h3 { /* Problem Title */
+    margin: 0 0 1rem 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-color-headings);
+  }
+  
+  .problem-section h4 { /* Section Headers */
+    margin: 0 0 1rem 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-color-headings);
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--accent-color); /* Accent border */
+    display: inline-block; /* Make border fit content */
+  }
+  .problem-section h5 { /* Sub-headers like "Sample Cases" */
+     margin: 1.5rem 0 0.75rem 0;
+     font-size: 1.1rem;
+     font-weight: 600;
+     color: var(--text-color-secondary);
+  }
+  
+  .roadmap-text {
+    white-space: pre-wrap;
+    font-size: 0.95rem;
+    color: var(--text-color-secondary);
+    background-color: var(--bg-color-subtle);
+    padding: 1rem;
+    border-radius: 6px;
+    border: 1px solid var(--border-color-subtle);
+  }
+  
+  .level-description {
+    white-space: pre-wrap;
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+  
+  .level-description strong {
+    color: var(--accent-color);
+    font-weight: 600;
+  }
+  
+  .level-description code,
+  .sample-cases-list code {
+    background-color: var(--code-bg-color);
+    color: var(--code-text-color);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+    font-size: 0.9rem;
+    border: 1px solid var(--code-border-color);
+  }
+  .level-description code {
+      display: inline-block;
+      margin: 3px 0;
+  }
+  
+  .sample-cases-info {
+      font-size: 0.9rem;
+      color: var(--text-color-tertiary); /* Lighter secondary text */
+      margin-bottom: 1rem;
+      font-style: italic;
+  }
+  
+  .sample-cases-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .sample-cases-list li {
+    margin-bottom: 0.75rem;
+  }
+  
+  .error-text {
+    color: var(--error-color);
+    background-color: var(--error-bg);
+    padding: 0.75rem;
+    border-radius: 4px;
+    margin: 1rem 0;
+  }
+  
+  /* Level Navigation Styling */
+  .level-navigation {
+    margin-top: auto; /* Push to bottom of flex container */
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color-subtle);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+  }
+  .level-navigation button {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    background-color: var(--button-bg-secondary);
+    color: var(--button-text);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .level-navigation button:hover:not(:disabled) {
+    background-color: var(--button-bg-secondary-hover);
+    transform: translateY(-1px);
+  }
+  .level-navigation button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .level-navigation span {
+    font-weight: 500;
+    color: var(--text-color-secondary);
+    font-size: 0.9rem;
+  }
+  
+  /* Right Panel Specifics */
+  .panel-editor {
+    overflow: hidden; /* Monaco handles its own scroll */
+    border-bottom: 1px solid var(--border-color); /* Separator */
+  }
+  .panel-console {
+    background-color: var(--console-bg);
+    color: var(--console-text);
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .console-output {
+    padding: 1rem;
+  }
+  .console-output h4 {
+      margin: 0 0 1rem 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-color-secondary);
+  }
+  
+  .console-output pre {
+    background-color: var(--console-pre-bg);
+    color: var(--console-pre-text);
+    padding: 1rem;
+    border-radius: 4px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    border: 1px solid var(--console-border);
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  
+  /* Action Buttons Styling */
+  .action-buttons {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+  }
+  .action-buttons button {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .action-buttons button:first-child { /* Run Code */
+      background-color: var(--button-run-bg);
+      color: var(--button-run-text);
+  }
+  .action-buttons button:first-child:hover {
+      background-color: var(--button-run-bg-hover);
+  }
+  .action-buttons button:nth-child(2) { /* Submit Level */
+      background-color: var(--button-submit-bg);
+      color: var(--button-submit-text);
+  }
+  .action-buttons button:nth-child(2):hover {
+      background-color: var(--button-submit-bg-hover);
+  }
+  .action-buttons .exit-button { /* Exit Challenge */
+    margin-left: auto;
+    background-color: var(--button-exit-bg);
+    color: var(--button-exit-text);
+  }
+  .action-buttons .exit-button:hover {
+    background-color: var(--button-exit-bg-hover);
+  }
+  
+  /* Resize Handle Styling */
+  .resize-handle, .resize-handle-horizontal {
+    background-color: var(--resize-handle-bg);
+    border: none;
+    transition: background-color 0.2s ease;
+    z-index: 10; /* Ensure handles are on top */
+    position: relative; /* Needed for z-index */
+  }
+  .resize-handle { /* Vertical */
+    width: 4px !important; /* Thinner */
+    cursor: col-resize;
+  }
+  .resize-handle-horizontal { /* Horizontal */
+    height: 4px !important; /* Thinner */
+    cursor: row-resize;
+  }
+  .resize-handle:hover, .resize-handle-horizontal:hover {
+    background-color: var(--resize-handle-bg-hover);
+  }
+  .resize-handle[data-resize-handle-active],
+  .resize-handle-horizontal[data-resize-handle-active] {
+     background-color: var(--resize-handle-bg-active);
+  }

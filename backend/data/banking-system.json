@@ -1,0 +1,95 @@
+{
+  "id": "banking-system",
+  "title": "Simplified Banking System",
+  "description_overview": "Your task is to implement a simplified version of a banking system. All operations that should be supported are listed below. Plan your design according to the level specifications. Subsequent levels are opened when the current level is correctly solved. You always have access to the data for the current and all previous levels.",
+  "description_roadmap": "Level 1: The banking system should support creating new accounts, depositing money into accounts, and transferring money between two accounts.\nLevel 2: The banking system should support ranking accounts based on outgoing transactions.\nLevel 3: The banking system should allow scheduling payments with cashback and checking the status of scheduled payments.\nLevel 4: The banking system should support merging two accounts while retaining both accounts' balance and transaction histories.",
+  "initial_code_stub": "class Main:\n  def __init__(self):\n    # Your data structures here\n",
+  "levels": [
+    {
+      "level_number": 1,
+      "title": "Account Creation, Deposits, and Transfers",
+      "description_specific": "Initially, the banking system does not contain any accounts, so implement operations to allow account creation, deposits, and transfers between 2 different accounts.\n\n`create_account(self, timestamp: int, account_id: str) -> bool` — should create a new account with the given identifier if it doesn't already exist. Returns True if the account was successfully created or False if an account with account_id already exists.\n\n`deposit(self, timestamp: int, account_id: str, amount: int) -> int | None` — should deposit the given amount of money to the specified account account_id. Returns the balance of the account after the operation has been processed. If the specified account doesn't exist, should return None.\n\n`transfer(self, timestamp: int, source_account_id: str, target_account_id: str, amount: int) -> int | None` — should transfer the given amount of money from account source_account_id to account target_account_id. Returns the balance of source_account_id if the transfer was successful or None otherwise.\nReturns None if source_account_id or target_account_id doesn't exist.\nReturns None if source_account_id and target_account_id are the same.\nReturns None if account source_account_id has insufficient funds to perform the transfer.",
+      "test_cases_preview": [
+        "create_account(100, 'acc1') -> True",
+        "create_account(110, 'acc1') -> False",
+        "deposit(120, 'acc1', 1000) -> 1000",
+        "deposit(125, 'acc-unknown', 500) -> None",
+        "create_account(130, 'acc2') -> True",
+        "deposit(135, 'acc2', 200) -> 200",
+        "transfer(140, 'acc1', 'acc2', 300) -> 700",
+        "transfer(150, 'acc2', 'acc1', 1000) -> None (insufficient funds)",
+        "transfer(160, 'acc1', 'acc1', 50) -> None (same account)",
+        "transfer(170, 'acc1', 'acc-unknown', 50) -> None (target doesn't exist)"
+      ]
+    },
+    {
+      "level_number": 2,
+      "title": "Ranking Spenders",
+      "description_specific": "The bank wants to identify people who are not keeping money in their accounts, so implement operations to support ranking accounts based on outgoing transactions.\n\n`top_spenders(self, timestamp: int, n: int) -> list[str]` — should return the identifiers of the top n accounts with the highest outgoing transactions - the total amount of money either transferred out of or paid/withdrawn (the pay operation will be introduced in level 3) - sorted in descending order, or in case of a tie, sorted alphabetically by account_id in ascending order. The result should be a list of strings in the following format: [\"<account_id_1>(<total_outgoing_1>)\", \"<account_id_2>(<total_outgoing_2>)\", ..., \"<account_id_n>(<total_outgoing_n>)\"].\nIf less than n accounts exist in the system, then return all their identifiers (in the described format).\nCashback (an operation that will be introduced in level 3) should not be reflected in the calculations for total outgoing transactions.",
+      "test_cases_preview": [
+        "# Assuming acc1 transferred 300 in Level 1",
+        "top_spenders(200, 2) -> ['acc1(300)', 'acc2(0)']",
+        "transfer(210, 'acc2', 'acc1', 50) -> 150",
+        "top_spenders(220, 1) -> ['acc1(300)']",
+        "top_spenders(230, 2) -> ['acc1(300)', 'acc2(50)']",
+        "create_account(240, 'acc3') -> True",
+        "deposit(250, 'acc3', 100) -> 100",
+        "transfer(260, 'acc3', 'acc1', 100) -> 0",
+        "# Now acc1 spent 300, acc2 spent 50, acc3 spent 100",
+        "top_spenders(270, 3) -> ['acc1(300)', 'acc3(100)', 'acc2(50)']",
+        "# Tie-breaking example (add payment later)",
+        "create_account(280, 'abc_spender') -> True",
+        "create_account(281, 'xyz_spender') -> True",
+        "deposit(282, 'abc_spender', 100) -> 100",
+        "deposit(283, 'xyz_spender', 100) -> 100",
+        "transfer(284, 'abc_spender', 'acc1', 100) -> 0",
+        "transfer(285, 'xyz_spender', 'acc1', 100) -> 0",
+        "top_spenders(290, 5) -> [..., 'abc_spender(100)', 'xyz_spender(100)', ...]"
+      ]
+    },
+    {
+      "level_number": 3,
+      "title": "Scheduled Payments with Cashback",
+      "description_specific": "The banking system should allow scheduling payments with some cashback and checking the status of scheduled payments.\n\n`pay(self, timestamp: int, account_id: str, amount: int) -> str | None` — should withdraw the given amount of money from the specified account. All withdraw transactions provide a 2% cashback - 2% of the withdrawn amount (rounded down to the nearest integer) will be refunded to the account 24 hours after the withdrawal. If the withdrawal is successful (i.e., the account holds sufficient funds to withdraw the given amount), returns a string with a unique identifier for the payment transaction in this format: \"payment[ordinal number of withdraws from all accounts]\" - e.g., \"payment1\", \"payment2\", etc. Additional conditions:\nReturns None if account_id doesn't exist.\nReturns None if account_id has insufficient funds to perform the payment.\n`top_spenders` should now also account for the total amount of money withdrawn from accounts.\nThe waiting period for cashback is 24 hours, equal to 24 * 60 * 60 * 1000 = 86400000 milliseconds (the unit for timestamps). So, cashback will be processed at timestamp `timestamp + 86400000`.\nWhen it's time to process cashback for a withdrawal, the amount must be refunded to the account before any other transactions are performed at the relevant timestamp.\n\n`get_payment_status(self, timestamp: int, account_id: str, payment: str) -> str | None` — should return the status of the payment transaction for the given payment. Specifically:\nReturns None if account_id doesn't exist.\nReturns None if the given payment doesn't exist for the specified account.\nReturns None if the payment transaction was for an account with a different identifier from account_id.\nReturns a string representing the payment status: \"IN_PROGRESS\" or \"CASHBACK_RECEIVED\".",
+      "test_cases_preview": [
+        "# Assuming acc1 has 950 (700 + 50 + 100 + 100)",
+        "pay(300, 'acc1', 500) -> 'payment1'",
+        "pay(310, 'acc1', 1000) -> None (insufficient funds)",
+        "# acc1 balance is now 450. Total spent: 300(transfer) + 500(pay) = 800",
+        "top_spenders(320, 1) -> ['acc1(800)']",
+        "get_payment_status(330, 'acc1', 'payment1') -> 'IN_PROGRESS'",
+        "get_payment_status(330, 'acc2', 'payment1') -> None (wrong account)",
+        "get_payment_status(330, 'acc1', 'payment-unknown') -> None (payment doesn't exist)",
+        "# Time jump to process cashback for payment1 (timestamp 300)",
+        "# Cashback amount = floor(500 * 0.02) = 10",
+        "# Cashback timestamp = 300 + 86400000 = 86400300",
+        "deposit(86400300, 'acc1', 10) # Simulate cashback processing (internally)",
+        "# Acc1 balance becomes 450 + 10 = 460 at/after timestamp 86400300",
+        "get_payment_status(86400300, 'acc1', 'payment1') -> 'CASHBACK_RECEIVED'"
+      ]
+    },
+    {
+      "level_number": 4,
+      "title": "Account Merging and Balance History",
+      "description_specific": "The banking system should support merging two accounts while retaining both accounts' balance and transaction histories.\n\n`merge_accounts(self, timestamp: int, account_id_1: str, account_id_2: str) -> bool` — should merge account_id_2 into the account_id_1. Returns True if accounts were successfully merged, or False otherwise. Specifically:\nReturns False if account_id_1 is equal to account_id_2.\nReturns False if account_id_1 or account_id_2 doesn't exist.\nAll pending cashback refunds for account_id_2 should still be processed, but refunded to account_id_1 instead.\nAfter the merge, it must be possible to check the status of payment transactions for account_id_2 with payment identifiers by replacing account_id_2 with account_id_1.\nThe balance of account_id_2 should be added to the balance for account_id_1.\n`top_spenders` operations should recognize merged accounts - the total outgoing transactions for merged accounts should be the sum of all money transferred and/or withdrawn in both accounts.\naccount_id_2 should be removed from the system after the merge.\n\n`get_balance(self, timestamp: int, account_id: str, time_at: int) -> int | None` — should return the total amount of money in the account account_id at the given timestamp time_at. If the specified account did not exist at a given time time_at, returns None.\nIf queries have been processed at timestamp time_at, get_balance must reflect the account balance after the query has been processed.\nIf the account was merged into another account, the merged account should inherit its balance history.",
+      "test_cases_preview": [
+        "# Balances before merge: acc1=460, acc2=150. Spent: acc1=800, acc2=50",
+        "get_balance(90000000, 'acc1', 120) -> 1000 # Balance before transfers",
+        "get_balance(90000000, 'acc1', 300) -> 450 # Balance after pay, before cashback",
+        "get_balance(90000000, 'acc1', 86400300) -> 460 # Balance after cashback",
+        "get_balance(90000000, 'acc2', 135) -> 200",
+        "get_balance(90000000, 'acc2', 90000000) -> 150",
+        "merge_accounts(90000100, 'acc1', 'acc2') -> True",
+        "# acc1 balance = 460 + 150 = 610. acc2 removed.",
+        "# acc1 total spent = 800 + 50 = 850.",
+        "get_balance(90000200, 'acc1', 90000100) -> 610",
+        "get_balance(90000200, 'acc2', 90000100) -> None (acc2 merged/removed)",
+        "top_spenders(90000300, 1) -> ['acc1(850)']",
+        "# If acc2 had a pending payment 'payment2'",
+        "# get_payment_status(90000400, 'acc1', 'payment2') -> should work",
+        "merge_accounts(90000500, 'acc1', 'acc1') -> False (same account)",
+        "merge_accounts(90000600, 'acc1', 'acc-unknown') -> False (acc doesn't exist)"
+      ]
+    }
+  ]
+}

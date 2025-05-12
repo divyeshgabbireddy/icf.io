@@ -1,0 +1,96 @@
+/* icf.io/frontend/src/InstructionView.css */
+.instruction-view {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2.5rem;
+    background-color: var(--panel-bg);
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: left;
+    position: relative;
+}
+
+.instruction-view h1 {
+    font-size: 2.5em;
+    margin: 0 0 1rem 0;
+    color: var(--text-color-headings);
+    text-align: center;
+}
+
+.instruction-view h2 {
+    font-size: 1.5em;
+    margin: 0 0 2rem 0;
+    color: var(--text-color-secondary);
+    text-align: center;
+    font-weight: 500;
+}
+
+.instruction-view hr {
+    margin: 2rem 0;
+    border: 0;
+    border-top: 1px solid var(--border-color);
+}
+
+.instruction-view ul {
+    margin: 1.5rem 0;
+    padding-left: 1.5rem;
+    line-height: 1.6;
+}
+
+.instruction-view ul li {
+    margin-bottom: 1rem;
+    color: var(--text-color-primary);
+}
+
+.instruction-view ul li strong {
+    color: var(--accent-color);
+    font-weight: 600;
+}
+
+.instruction-view p {
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    color: var(--text-color-primary);
+}
+
+.instruction-view .start-button {
+    display: block;
+    width: 100%;
+    max-width: 300px;
+    margin: 2rem auto 0;
+    padding: 1rem 2rem;
+    font-size: 1.1em;
+    background-color: var(--button-submit-bg);
+    color: var(--button-submit-text);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.instruction-view .start-button:hover {
+    background-color: var(--button-submit-bg-hover);
+    transform: translateY(-1px);
+}
+
+.instruction-view .back-button {
+    position: absolute;
+    top: 1.5rem;
+    left: 1.5rem;
+    background: none;
+    border: none;
+    color: var(--accent-color);
+    cursor: pointer;
+    font-size: 1em;
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: color 0.2s ease;
+}
+
+.instruction-view .back-button:hover {
+    color: var(--button-submit-bg-hover);
+    text-decoration: none;
+}

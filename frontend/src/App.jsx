@@ -1,65 +1,102 @@
 // icf.io/frontend/src/App.jsx
 import { useState, useEffect } from 'react';
-import reactLogo from './assets/react.svg';
-import viteLogo from '/vite.svg'; // Vite logo path might differ slightly depending on Vite version
+import axios from 'axios';
 import './App.css';
-import axios from 'axios'; // Import axios
+import InstructionView from './InstructionView'; // Import the instruction view
+import ProblemView from './ProblemView';       // Import the simple problem view
+// Make sure ProblemList is also defined or imported if it's separate
 
-function App() {
-  const [count, setCount] = useState(0);
-  const [backendMessage, setBackendMessage] = useState('');
-  const [apiGreeting, setApiGreeting] = useState('');
+const API_BASE_URL = 'http://localhost:8000';
+
+// Define ProblemList component here (or import if it's in its own file)
+function ProblemList({ onSelectProblem }) {
+  const [problems, setProblems] = useState([]);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    // Fetch data from the root endpoint
-    axios.get('http://localhost:8000/') // Your backend's root URL (FastAPI server)
+    axios.get(`${API_BASE_URL}/api/problems`)
       .then(response => {
-        setBackendMessage(response.data.message);
+        setProblems(response.data);
       })
-      .catch(error => {
-        console.error("Error fetching root data:", error);
-        setBackendMessage("Failed to load message from backend.");
+      .catch(err => {
+        console.error("Error fetching problems:", err);
+        setError('Failed to load problems.');
       });
+  }, []);
 
-    // Fetch data from the /api/greeting endpoint
-    axios.get('http://localhost:8000/api/greeting') // Your backend's API URL
-      .then(response => {
-        setApiGreeting(response.data.greeting);
-      })
-      .catch(error => {
-        console.error("Error fetching API greeting:", error);
-        setApiGreeting("Failed to load greeting from API.");
-      });
-  }, []); // Empty dependency array means this runs once on component mount
+  if (error) {
+    return <div className="error">{error}</div>;
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank" rel="noreferrer">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank" rel="noreferrer">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-      {/* Display messages from backend */}
-      <h2>Message from Backend:</h2>
-      <p>{backendMessage || "Loading backend message..."}</p>
-      <h2>Greeting from API:</h2>
-      <p>{apiGreeting || "Loading API greeting..."}</p>
-    </>
+    <div>
+      <h1>Available Problems</h1>
+      {problems.length === 0 && !error && <p>Loading problems...</p>}
+      <ul>
+        {/* Pass the whole problem summary object */}
+        {problems.map(problem => (
+          <li key={problem.id}>
+            <button onClick={() => onSelectProblem(problem)}>
+              {problem.title} ({problem.id})
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+// End ProblemList component definition
+
+
+function App() {
+  // State for view: 'list', 'instructions', 'challenge'
+  const [currentView, setCurrentView] = useState('list');
+  // State to hold the currently selected problem's data (summary first)
+  const [selectedProblem, setSelectedProblem] = useState(null);
+
+  const handleSelectProblem = (problemSummary) => {
+    setSelectedProblem(problemSummary); // Store the summary {id, title}
+    setCurrentView('instructions');    // Show instructions view
+  };
+
+  const handleStartChallenge = () => {
+    setCurrentView('challenge');       // Show the actual challenge view
+  };
+
+  const handleBackToList = () => {
+    setSelectedProblem(null);
+    setCurrentView('list');            // Go back to the list view
+  };
+
+  // Render based on currentView state
+  let viewToRender;
+  switch (currentView) {
+    case 'instructions':
+      viewToRender = (
+        <InstructionView
+          problemTitle={selectedProblem?.title || 'Loading...'} // Use optional chaining
+          onStartChallenge={handleStartChallenge}
+          onBackToList={handleBackToList}
+        />
+      );
+      break;
+    case 'challenge':
+      viewToRender = (
+        <ProblemView // Use the simple ProblemView component
+          problemId={selectedProblem?.id} // Pass only the ID
+          onBackToList={handleBackToList}
+        />
+      );
+      break;
+    case 'list':
+    default:
+      viewToRender = <ProblemList onSelectProblem={handleSelectProblem} />;
+  }
+
+  return (
+    <div className="App">
+      {viewToRender}
+    </div>
   );
 }
 

@@ -1,8 +1,74 @@
 #root {
-  max-width: 1280px;
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  background-color: var(--app-bg);
+  color: var(--text-color-primary);
+}
+
+.App {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+/* Problem List Styling */
+.problem-list {
+  width: 100%;
+  max-width: 800px;
   margin: 0 auto;
   padding: 2rem;
-  text-align: center;
+  background-color: var(--panel-bg);
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.problem-list h1 {
+  font-size: 2.5em;
+  margin-bottom: 2rem;
+  color: var(--text-color-headings);
+}
+
+.problem-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.problem-list li {
+  margin-bottom: 1rem;
+}
+
+.problem-list button {
+  width: 100%;
+  padding: 1rem;
+  font-size: 1.1em;
+  background-color: var(--button-bg-secondary);
+  color: var(--button-text);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.problem-list button:hover {
+  background-color: var(--button-bg-secondary-hover);
+  transform: translateY(-1px);
+}
+
+.problem-list .error {
+  color: var(--error-color);
+  padding: 1rem;
+  border-radius: 6px;
+  background-color: var(--error-bg);
+  margin: 1rem 0;
 }
 
 .logo {
