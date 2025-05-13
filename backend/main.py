@@ -1,20 +1,14 @@
-# icf.io/backend/main.py
+import os, json
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-import json # To load JSON
-import os   # To construct file paths
-from typing import List, Optional # For type hinting
+from typing import List, Optional
 
-# Import Pydantic models from models.py
-from models import Problem, Level, ProblemSummary # Changed to direct import
+from models import Problem, ProblemSummary, CodeSubmission, RunResult
 
 app = FastAPI()
 
-origins = [
-    "http://localhost:5173",
-    "http://localhost:3000",
-]
-
+# CORS
+origins = ["http://localhost:5173", "http://localhost:3000"]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -23,64 +17,79 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-DATA_DIR = os.path.join(os.path.dirname(__file__), 'data') # Path to the data directory
+DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 
-def load_problem_data(problem_id: str) -> Optional[Problem]:
-    problem_file_path = os.path.join(DATA_DIR, f"{problem_id}.json")
-    if not os.path.exists(problem_file_path):
+def load_problem_data(pid: str) -> Optional[Problem]:
+    path = os.path.join(DATA_DIR, f"{pid}.json")
+    if not os.path.exists(path):
         return None
-    try:
-        with open(problem_file_path, 'r') as f:
-            data = json.load(f)
-            return Problem(**data) # Validate data with Pydantic model
-    except Exception as e:
-        print(f"Error loading or parsing problem {problem_id}: {e}") # For debugging
-        return None
+    with open(path) as f:
+        return Problem(**json.load(f))
 
-def get_available_problems() -> List[ProblemSummary]:
-    summaries = []
-    if not os.path.exists(DATA_DIR):
-        return summaries # Return empty list if data directory doesn't exist
+@app.get("/", response_model=dict)
+def read_root():
+    return {"message": "ICF.io Backend (exec mode)"}
 
-    for filename in os.listdir(DATA_DIR):
-        if filename.endswith(".json"):
-            problem_id = filename[:-5] # Remove .json
-            try:
-                # For summary, we only need id and title, could optimize later
-                # by not loading the whole file if many problems.
-                # For MVP, loading the whole file to get title is fine.
-                problem_file_path = os.path.join(DATA_DIR, filename)
-                with open(problem_file_path, 'r') as f:
-                    data = json.load(f)
-                    summaries.append(ProblemSummary(id=problem_id, title=data.get("title", "Untitled Problem")))
-            except Exception as e:
-                print(f"Error processing summary for {filename}: {e}")
-    return summaries
-# --- End Helper Functions ---
-
-
-@app.get("/")
-async def read_root():
-    return {"message": "Hello from the Backend!"}
-
-@app.get("/api/greeting")
-async def get_greeting():
-    return {"greeting": "Hello, Coder! Welcome to the platform."}
-
-# --- New API Endpoints for Problems ---
 @app.get("/api/problems", response_model=List[ProblemSummary])
-async def list_problems():
-    """
-    Returns a list of available problems with their IDs and titles.
-    """
-    return get_available_problems()
+def list_problems():
+    summaries = []
+    for fn in os.listdir(DATA_DIR):
+        if fn.endswith(".json"):
+            with open(os.path.join(DATA_DIR, fn)) as f:
+                data = json.load(f)
+                summaries.append(ProblemSummary(id=data["id"], title=data.get("title","")))
+    return summaries
 
-@app.get("/api/problems/{problem_id}", response_model=Problem)
-async def get_problem_details(problem_id: str):
-    """
-    Returns the full details for a specific problem.
-    """
-    problem = load_problem_data(problem_id)
-    if problem is None:
-        raise HTTPException(status_code=404, detail=f"Problem '{problem_id}' not found")
-    return problem
+@app.get("/api/problems/{pid}", response_model=Problem)
+def get_problem(pid: str):
+    prob = load_problem_data(pid)
+    if not prob:
+        raise HTTPException(404, f"Problem '{pid}' not found")
+    return prob
+
+@app.post("/api/run", response_model=List[RunResult])
+def run_code(sub: CodeSubmission):
+    prob = load_problem_data(sub.problem_id)
+    if not prob:
+        raise HTTPException(404, "Problem not found")
+    lvl = next((L for L in prob.levels if L.level_number == sub.level_number), None)
+    if not lvl:
+        raise HTTPException(404, "Level not found")
+
+    # exec the user code
+    namespace = {}
+    try:
+        exec(sub.user_code, namespace)
+    except Exception as e:
+        raise HTTPException(400, f"Error in submitted code: {e}")
+
+    MainClass = namespace.get("Main")
+    if not callable(MainClass):
+        raise HTTPException(400, "No Main class defined in submission")
+
+    inst = MainClass()
+    results: List[RunResult] = []
+
+    for tc in lvl.test_cases:
+        for call in tc.calls:
+            method = getattr(inst, call.method, None)
+            if not callable(method):
+                out = None
+            else:
+                try:
+                    out = method(*call.args)
+                except Exception:
+                    out = None
+
+            actual_str = None if out is None else str(out)
+            passed = (out == call.expected_return)
+
+            results.append(RunResult(
+                method=call.method,
+                args=call.args,
+                expected=call.expected_return,
+                actual=actual_str,
+                passed=passed
+            ))
+
+    return results
